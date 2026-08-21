@@ -14,7 +14,7 @@ IN_PATH = PROCESSED_DIR / "reviews_filtered.jsonl"
 OUT_PATH = PROCESSED_DIR / "reviews_corpus.jsonl"
 
 MIN_CHARS = 40          # drop very short, low-signal comments ("nice game")
-MAX_PER_GAME = 800       # cap per game, keeps corpus balanced + embeddings cheap
+MAX_PER_GAME = 100       # cap per game, keeps corpus balanced + embeddings cheap
 RANDOM_SEED = 42
 
 

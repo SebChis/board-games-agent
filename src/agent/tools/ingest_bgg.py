@@ -23,6 +23,10 @@ GAMES = [
     "Carcassonne",
     "Splendor",
     "Azul",
+    "7 Wonders",
+    "Codenames",
+    "King of Tokyo",
+    "Wingspan",
 ]
 
 # Only pull the columns we actually need from the big reviews file -
