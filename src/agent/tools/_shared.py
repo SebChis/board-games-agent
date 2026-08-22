@@ -7,10 +7,10 @@ from pathlib import Path
 import numpy as np
 from google import genai
 from google.genai import types
+from dotenv import load_dotenv
 
 EMBED_MODEL = "gemini-embedding-001"
 GEN_MODEL = "gemini-3.5-flash-lite"
-
 
 def repo_root() -> Path:
     """Walk upwards until we find the repo root (the folder containing data/processed)."""
@@ -21,24 +21,33 @@ def repo_root() -> Path:
         p = p.parent
     return p
 
+load_dotenv(repo_root() / ".env", override=True)
 
 @functools.lru_cache(maxsize=1)
 def client() -> genai.Client:
     return genai.Client()
 
 
-def embed(texts: list[str] | str, task_type: str) -> np.ndarray:
+def embed(texts: list[str] | str, task_type: str, batch_size: int = 100) -> np.ndarray:
     if isinstance(texts, str):
         texts = [texts]
-    for attempt in range(7):
-        try:
-            result = client().models.embed_content(
-                model=EMBED_MODEL,
-                contents=texts,
-                config=types.EmbedContentConfig(task_type=task_type, output_dimensionality=768),
-            )
-            vectors = np.array([e.values for e in result.embeddings])
-            return vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
-        except genai.errors.APIError:
-            time.sleep(2**attempt)
-    raise RuntimeError("embedding failed after 7 attempts")
+
+    all_vectors = []
+    for start in range(0, len(texts), batch_size):
+        batch = texts[start:start + batch_size]
+
+        result = client().models.embed_content(
+            model=EMBED_MODEL,
+            contents=batch,
+            config=types.EmbedContentConfig(task_type=task_type, output_dimensionality=768),
+        )
+        vectors = np.array([e.values for e in result.embeddings])
+        all_vectors.append(vectors)
+        print(f"  embedded {start + len(batch)}/{len(texts)}")
+
+        if start + batch_size < len(texts):
+            print("  waiting 62s (free-tier quota is per-minute)...")
+            time.sleep(62)
+
+    vectors = np.vstack(all_vectors)
+    return vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
