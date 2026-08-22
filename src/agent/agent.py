@@ -1,11 +1,11 @@
 """Board Rules Agent — arbitrates rule conflicts across 10 board games."""
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from google.adk.agents import LlmAgent
 
 from . import retrieval, state, tools
 
-load_dotenv(tools.repo_root() / ".env", override=True)
+# load_dotenv(tools.repo_root() / ".env", override=True)
 
 MODEL = "gemini-3.5-flash-lite"
 
